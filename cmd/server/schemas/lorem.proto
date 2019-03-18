@@ -1,0 +1,8 @@
+syntax = "proto2";
+package schemas;
+
+message ProtobufLorem {
+  required string Id = 1;
+  map<int32, string> Data = 2;
+  optional int64 Timestamp = 3;
+}

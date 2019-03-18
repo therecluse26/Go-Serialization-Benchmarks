@@ -1,0 +1,14 @@
+namespace schemas;
+
+table LoremFb {
+  Id:string;
+  Data:[LoremFbDataMap];
+  Timestamp:int64;
+}
+
+table LoremFbDataMap {
+    index:int32;
+    text:string;
+}
+
+root_type LoremFb;
