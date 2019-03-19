@@ -1,4 +1,4 @@
-package main
+package conf
 
 type Defaults struct {
 	Mode string
@@ -6,4 +6,6 @@ type Defaults struct {
 	DataLength int
 }
 
+
 var Default = Defaults{"http", "json", 1000}
+

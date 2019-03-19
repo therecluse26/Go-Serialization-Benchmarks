@@ -1,4 +1,4 @@
-package main
+package data
 
 import (
 	lorem2 "github.com/drhodes/golorem"
@@ -13,6 +13,8 @@ type RawData struct {
 	Data map[int32]string
 	Timestamp int64
 }
+
+var LoremIpsum = GenerateData()
 
 func BuildRawData(id string, loremIpsum string, count int, length int) RawData {
 
@@ -29,7 +31,6 @@ func BuildRawData(id string, loremIpsum string, count int, length int) RawData {
 	return data
 }
 
-func GenerateData () string {
-	loremIpsum := lorem2.Paragraph(200000, 200000)
-	return loremIpsum
+func GenerateData() string {
+	return lorem2.Paragraph(2000000, 2000000)
 }

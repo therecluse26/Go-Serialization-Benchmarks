@@ -1,16 +1,26 @@
 package main
 
 type UrlParams struct {
-	id int
+	id string
 	format string
-	count int
-	length int
+	arrayCount string
+	length string
 }
 
-var params = &UrlParams{10, "json", 100, 100}
+var params = &UrlParams{"1", "flatbuffers", "1000", "100"}
 
 func main() {
 
-	DataRequest("http", params)
+	//fmt.Println(flag)
+
+	reqCount := 1000
+
+	benchmarks := RequestBenchmarks("http","http://localhost:9090/data/", params, reqCount)
+
+	benchmarks.DisplayBenchmarks("cmdline", false)
+
+}
+
+func parseFlags() {
 
 }

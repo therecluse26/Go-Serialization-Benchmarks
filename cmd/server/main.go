@@ -1,11 +1,18 @@
 package main
 
-var LoremIpsum string
-
-func init(){
-	LoremIpsum = GenerateData()
-}
+import (
+	"./conf"
+	"./modes"
+)
 
 func main(){
-	InitializeServer(Default.Mode)
+	InitializeServer(conf.Default.Mode)
+}
+
+func InitializeServer(mode string){
+
+	if mode == "http" {
+		modes.StartHttpServer()
+	}
+
 }

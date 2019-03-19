@@ -1,4 +1,4 @@
-package main
+package modes
 
 import (
 	"fmt"
@@ -6,24 +6,11 @@ import (
 	"log"
 	"net/http"
 	"strconv"
+	"../data"
+	"../conf"
 )
 
-var Modes = map[string][]string{
-	"http": {"rest", "rpc", "websocket"},
-	"local": {"socket", "pipe"},
-}
-
 var Router mux.Router
-
-
-func InitializeServer(mode string){
-
-	if mode == "http" {
-		StartHttpServer()
-	}
-
-}
-
 
 func StartHttpServer(){
 
@@ -42,21 +29,20 @@ func HttpDataHandler(w http.ResponseWriter, r *http.Request){
 	params := mux.Vars(r)
 
 	id := params["id"]
-	count, err := strconv.Atoi(r.FormValue("count")); if r.FormValue("count") == "" || err != nil { count = Default.DataLength}
-	strLen, err := strconv.Atoi(r.FormValue("length")); if r.FormValue("length") == "" || err != nil { strLen = Default.DataLength}
-	format := r.FormValue("format"); if format == "" { format = Default.Format}
+	count, err := strconv.Atoi(r.FormValue("count")); if r.FormValue("count") == "" || err != nil { count = conf.Default.DataLength}
+	strLen, err := strconv.Atoi(r.FormValue("length")); if r.FormValue("length") == "" || err != nil { strLen = conf.Default.DataLength}
+	format := r.FormValue("format"); if format == "" { format = conf.Default.Format}
 
-	data := BuildRawData(id, LoremIpsum, count, strLen)
+	rawData := data.BuildRawData(id, data.LoremIpsum, count, strLen)
 
-	formatted := FormatData(format, data)
+	formatted := data.FormatData(format, rawData)
 
 	if format == "json" {
 		w.Header().Set("Content-Type", "application/json")
 	} else if format == "protobuf" {
 		w.Header().Set("Content-Type", "application/octet-stream")
-	} else if format == "flatbuf" {
+	} else if format == "flatbuffers" {
 		w.Header().Set("Content-Type", "binary/octet-stream")
-
 	}
 	_, errr := w.Write(formatted)
 	if errr != nil {

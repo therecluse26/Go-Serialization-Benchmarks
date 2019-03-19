@@ -1,36 +1,29 @@
-package main
+package data
 
 import (
-	"./schemas"
+	"../../../schemas"
 	"github.com/gin-gonic/gin/json"
 	"github.com/golang/protobuf/proto"
 	"github.com/google/flatbuffers/go"
 	"log"
 )
 
-const (
-	Json = "JSON"
-	Xml = "XML"
-	ProtoBuf = "Protocol Buffers"
-	FlatBuf = "FlatBuffers"
-)
 
 var Formats = []string{
 	"JSON",
 	"XML",
 	"ProtoBuf",
-	"FlatBuf",
+	"FlatBuffers",
 	"CapnProto",
 	"Avro",
 	"CBOR",
-
 }
 
 func FormatData(format string, data RawData) []byte {
 
 	if format == "json" {
 		return FormatJson(data)
-	} else if format == "flatbuf" {
+	} else if format == "flatbuffers" {
 		return FormatFlatbuf(data)
 	} else if format == "protobuf" {
 		return FormatProtobuf(data)
