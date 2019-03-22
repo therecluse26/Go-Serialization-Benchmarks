@@ -15,6 +15,7 @@ type Options struct {
 	runAll       bool
 	inputFile    string
 	outputFile   string
+	url          string
 }
 
 // Params instantiates options and stores their values
@@ -25,7 +26,7 @@ func main() {
 	Params = parseOptions()
 
 	// Sends requests to the server component
-	benchmarks := RequestBenchmarks("http", "http://localhost:9090/data/", &Params)
+	benchmarks := RequestBenchmarks("http", Params.url, &Params)
 
 	// Displays the benchmark results in the command line
 	benchmarks.DisplayBenchmarks("cmdline", Params.showDetails)
@@ -43,6 +44,7 @@ func parseOptions() Options {
 	detailsPtr := flag.Bool("details", false, "Display iteration details in benchmarks")
 	inputFilePtr := flag.String("in", "", "Path of an input file to serialize")
 	outputFilePtr := flag.String("out", "", "Output file path of serialized input file")
+	urlPtr := flag.String("u", "http://localhost:9090/data/", "Benchmark server url")
 
 	flag.Parse()
 
@@ -56,6 +58,7 @@ func parseOptions() Options {
 		showDetails:  *detailsPtr,
 		inputFile:    *inputFilePtr,
 		outputFile:   *outputFilePtr,
+		url:          *urlPtr,
 	}
 
 }
