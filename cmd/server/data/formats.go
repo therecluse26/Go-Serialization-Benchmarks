@@ -1,16 +1,19 @@
 package data
 
 import (
-	"../../../schemas"
 	"encoding/xml"
 	"errors"
+	"fmt"
+	"log"
+
+	"../../../schemas"
 	"github.com/gin-gonic/gin/json"
 	"github.com/golang/protobuf/proto"
-	"github.com/google/flatbuffers/go"
-	"log"
-	"zombiezen.com/go/capnproto2"
+	flatbuffers "github.com/google/flatbuffers/go"
+	capnp "zombiezen.com/go/capnproto2"
 )
 
+// Formats supported
 var Formats = []string{
 	"JSON",
 	"XML",
@@ -22,15 +25,13 @@ var Formats = []string{
 	"CBOR",
 }
 
-/**
- * FormatData invokes encoding functions by format
- * and returns encoded byte slice
- */
+// FormatData invokes encoding functions by format
+// and returns encoded byte slice
 func FormatData(format string, data RawData) ([]byte, error) {
 
 	switch format {
 	case "json":
-		return FormatJson(data)
+		return FormatJSON(data)
 	case "xml":
 		return FormatXML(data)
 	case "flatbuffers":
@@ -44,41 +45,35 @@ func FormatData(format string, data RawData) ([]byte, error) {
 	}
 }
 
-/**
- * FormatXML encodes result set as XML
- */
+// FormatXML encodes result set as XML
 func FormatXML(data RawData) ([]byte, error) {
 
 	xmlData, err := xml.Marshal(data)
 	if err != nil {
-		panic("HEY")
+		panic(err)
 	}
+
+	fmt.Println(xmlData)
 
 	return xmlData, err
 
 }
 
-/**
- * FormatJson encodes result set as JSON
- */
-func FormatJson(data RawData) ([]byte, error) {
+// FormatJSON encodes result set as JSON
+func FormatJSON(data RawData) ([]byte, error) {
 	return json.Marshal(data)
 }
 
-/**
- * FormatProtobuf encodes result set as Protocol Buffer
- */
+// FormatProtobuf encodes result set as Protocol Buffer
 func FormatProtobuf(data RawData) ([]byte, error) {
 	return proto.Marshal(&schemas.ProtobufLorem{
-		Id: &data.Id,
-		Data: data.Data,
+		Id:        &data.ID,
+		Data:      data.Data,
 		Timestamp: &data.Timestamp,
 	})
 }
 
-/**
- * FormatFlatbuf encodes result set as Flatbuffers
- */
+// FormatFlatbuf encodes result set as Flatbuffers
 func FormatFlatbuf(data RawData) ([]byte, error) {
 	b := &flatbuffers.Builder{}
 	b.Reset()
@@ -97,9 +92,9 @@ func FormatFlatbuf(data RawData) ([]byte, error) {
 	schemas.LoremFbStartDataVector(b, count)
 	dataMap := b.EndVector(count)
 
-	loremId := b.CreateByteString([]byte(data.Id))
+	loremID := b.CreateByteString([]byte(data.ID))
 	schemas.LoremFbStart(b)
-	schemas.LoremFbAddId(b, loremId)
+	schemas.LoremFbAddId(b, loremID)
 	schemas.LoremFbAddData(b, dataMap)
 	schemas.LoremFbAddTimestamp(b, data.Timestamp)
 	loremPosition := schemas.LoremFbEnd(b)
@@ -110,9 +105,7 @@ func FormatFlatbuf(data RawData) ([]byte, error) {
 
 }
 
-/**
- * FormatCapnProto encodes result set as Cap'n Proto
- */
+// FormatCapnProto encodes result set as Cap'n Proto
 func FormatCapnProto(data RawData) ([]byte, error) {
 	// New empty message for structs
 	msg, seg, err := capnp.NewMessage(capnp.SingleSegment(nil))
@@ -127,7 +120,9 @@ func FormatCapnProto(data RawData) ([]byte, error) {
 	}
 
 	dataRoot.SetTimestamp(data.Timestamp)
-	if dataRoot.SetId(data.Id) != nil { log.Fatal(err) }
+	if dataRoot.SetId(data.ID) != nil {
+		log.Fatal(err)
+	}
 
 	for idx, tx := range data.Data {
 
@@ -136,7 +131,9 @@ func FormatCapnProto(data RawData) ([]byte, error) {
 			log.Fatal(err)
 		}
 		dataMap.SetIndex(idx)
-		if dataMap.SetText(tx) != nil { log.Fatal(err) }
+		if dataMap.SetText(tx) != nil {
+			log.Fatal(err)
+		}
 
 	}
 

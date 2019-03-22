@@ -1,0 +1,10 @@
+#cloud-config
+
+packages:
+ - git
+ - go
+
+ runcmd:
+ - [ git clone, "https://github.com/therecluse26/Go-Serialization-Benchmarks", /var ]
+ - [cd, /var/Go-Serialization-Benchmarks/cmd/server]
+ - [go run, *.go]

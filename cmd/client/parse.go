@@ -1,16 +1,17 @@
 package main
 
 import (
-	"../../schemas"
 	"encoding/json"
 	"encoding/xml"
-	"github.com/golang/protobuf/proto"
 	"log"
-	"zombiezen.com/go/capnproto2"
+
+	"../../schemas"
+	"github.com/golang/protobuf/proto"
+	capnp "zombiezen.com/go/capnproto2"
 )
 
 type RawData struct {
-	Id        string
+	ID        string
 	Data      map[int32]string
 	Timestamp int64
 }
@@ -66,8 +67,6 @@ func (data *RespData) ParseCapnProto() RawData {
 	if err != nil {
 		log.Fatal(err)
 	}
-
-
 
 	//dat, _ :=result.Arena.Data(0)
 
