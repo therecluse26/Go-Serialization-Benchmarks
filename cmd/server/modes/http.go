@@ -17,6 +17,7 @@ func StartHttpServer(){
 	Router.HandleFunc("/data/{id:[0-9]+}", HttpDataHandler).Queries("format", "{format}", "count", "{count:[0-9]+}", "length", "{length:[0-9]+}").Methods("GET")
 
 	fmt.Println("Listening on port 9090")
+
 	err := http.ListenAndServe(":9090", &Router)
 	if err != nil {
 		log.Fatal(err)
@@ -24,28 +25,44 @@ func StartHttpServer(){
 
 }
 
+func Wrapper(dat []byte, err error) []byte {
+	if err != nil {
+		log.Fatal(err)
+	}
+	return dat
+}
+
 func HttpDataHandler(w http.ResponseWriter, r *http.Request){
 
 	params := mux.Vars(r)
 
 	id := params["id"]
-	count, err := strconv.Atoi(r.FormValue("count")); if r.FormValue("count") == "" || err != nil { count = conf.Default.DataLength}
-	strLen, err := strconv.Atoi(r.FormValue("length")); if r.FormValue("length") == "" || err != nil { strLen = conf.Default.DataLength}
-	format := r.FormValue("format"); if format == "" { format = conf.Default.Format}
+	count, err := strconv.Atoi(r.FormValue("count"))
+		if r.FormValue("count") == "" || err != nil { count = conf.Default.DataLength}
 
-	rawData := data.BuildRawData(id, data.LoremIpsum, count, strLen)
+	strLen, err := strconv.Atoi(r.FormValue("length"))
+		if r.FormValue("length") == "" || err != nil { strLen = conf.Default.DataLength}
 
-	formatted := data.FormatData(format, rawData)
+	format := r.FormValue("format")
+		if format == "" { format = conf.Default.Format }
 
-	if format == "json" {
+	switch format {
+	case "json":
 		w.Header().Set("Content-Type", "application/json")
-	} else if format == "protobuf" {
+	case "xml":
+		w.Header().Set("Content-Type", "application/xml")
+	case "protobuf":
 		w.Header().Set("Content-Type", "application/octet-stream")
-	} else if format == "flatbuffers" {
+	default:
 		w.Header().Set("Content-Type", "binary/octet-stream")
 	}
-	_, errr := w.Write(formatted)
-	if errr != nil {
+
+	_, err = w.Write(
+				Wrapper(
+					data.FormatData(
+						format,
+						data.BuildRawData(id, data.LoremIpsum, count, strLen))))
+	if err != nil {
 		log.Fatal(err)
 	}
 }

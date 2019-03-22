@@ -7,12 +7,14 @@ import (
 	"code.cloudfoundry.org/bytefmt"
 )
 
+// Individual benchmark (per request)
 type Benchmark struct {
 	StartTime time.Time
 	EndTime time.Time
 	TotalExecTime time.Duration
 }
 
+// Aggregate of all benchmarks per test
 type BenchAggregate struct {
 	Format string
 	RequestType string

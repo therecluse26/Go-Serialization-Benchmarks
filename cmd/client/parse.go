@@ -3,37 +3,83 @@ package main
 import (
 	"../../schemas"
 	"encoding/json"
+	"encoding/xml"
 	"github.com/golang/protobuf/proto"
 	"log"
+	"zombiezen.com/go/capnproto2"
 )
 
 type RawData struct {
-	Id string
-	Data map[int32]string
+	Id        string
+	Data      map[int32]string
 	Timestamp int64
 }
 
-func (resp *RespData) ParseResponse (format string) {
+var Parsed RawData
 
-	var parsed RawData
+/**
+ * ParseResponse parses the response from the server
+ * Important for overall benchmark to include both encoding/decoding
+ */
+func (resp *RespData) ParseResponse(format string) {
 
-	if format == "json" {
-		err := json.Unmarshal(*resp, &parsed)
-		if err != nil {
-			log.Fatal("parsing error: " + err.Error())
-		}
+	switch format {
 
-	} else if format == "flatbuffers" {
+	case "json":
+		Parsed = resp.ParseJson()
+
+	case "xml":
+		Parsed = resp.ParseXML()
+
+	case "flatbuffers":
 		schemas.GetRootAsLoremFb(*resp, 0)
-
-	} else if format == "protobuf" {
-		lorem := &schemas.ProtobufLorem{}
-		err := proto.Unmarshal(*resp, lorem)
-		if err != nil {
-			log.Fatalln("parsing error: ", err)
-		}
+	case "protobuf":
+		Parsed = resp.ParseProtoBuf()
+	case "capnproto":
+		Parsed = resp.ParseCapnProto()
 
 	}
 
 }
 
+func (data *RespData) ParseJson() RawData {
+	var parsed RawData
+	err := json.Unmarshal(*data, &parsed)
+	if err != nil {
+		log.Fatal("parsing error: " + err.Error())
+	}
+	return parsed
+}
+
+func (data *RespData) ParseXML() RawData {
+	var parsed RawData
+	err := xml.Unmarshal(*data, &parsed)
+	if err != nil {
+		log.Fatal("parsing error: " + err.Error())
+	}
+	return parsed
+}
+
+func (data *RespData) ParseCapnProto() RawData {
+
+	_, err := capnp.Unmarshal(*data)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+
+
+	//dat, _ :=result.Arena.Data(0)
+
+	return RawData{}
+}
+
+func (data *RespData) ParseProtoBuf() RawData {
+
+	lorem := &schemas.ProtobufLorem{}
+	err := proto.Unmarshal(*data, lorem)
+	if err != nil {
+		log.Fatalln("parsing error: ", err)
+	}
+	return RawData{*lorem.Id, lorem.Data, *lorem.Timestamp}
+}

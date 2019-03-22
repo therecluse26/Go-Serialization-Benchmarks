@@ -2,12 +2,14 @@ package data
 
 import (
 	"../../../schemas"
+	"encoding/xml"
+	"errors"
 	"github.com/gin-gonic/gin/json"
 	"github.com/golang/protobuf/proto"
 	"github.com/google/flatbuffers/go"
 	"log"
+	"zombiezen.com/go/capnproto2"
 )
-
 
 var Formats = []string{
 	"JSON",
@@ -15,36 +17,69 @@ var Formats = []string{
 	"ProtoBuf",
 	"FlatBuffers",
 	"CapnProto",
+	"MessagePack",
 	"Avro",
 	"CBOR",
 }
 
-func FormatData(format string, data RawData) []byte {
+/**
+ * FormatData invokes encoding functions by format
+ * and returns encoded byte slice
+ */
+func FormatData(format string, data RawData) ([]byte, error) {
 
-	if format == "json" {
+	switch format {
+	case "json":
 		return FormatJson(data)
-	} else if format == "flatbuffers" {
+	case "xml":
+		return FormatXML(data)
+	case "flatbuffers":
 		return FormatFlatbuf(data)
-	} else if format == "protobuf" {
+	case "protobuf":
 		return FormatProtobuf(data)
+	case "capnproto":
+		return FormatCapnProto(data)
+	default:
+		return []byte{}, errors.New("no vali format given")
 	}
-
-	return []byte{}
-
 }
 
-func FormatJson(data RawData) []byte {
+/**
+ * FormatXML encodes result set as XML
+ */
+func FormatXML(data RawData) ([]byte, error) {
 
-	jsonString, err := json.Marshal(data)
+	xmlData, err := xml.Marshal(data)
 	if err != nil {
-		log.Fatal(err)
+		panic("HEY")
 	}
 
-	return jsonString
+	return xmlData, err
+
 }
 
-func FormatFlatbuf(data RawData) []byte {
+/**
+ * FormatJson encodes result set as JSON
+ */
+func FormatJson(data RawData) ([]byte, error) {
+	return json.Marshal(data)
+}
 
+/**
+ * FormatProtobuf encodes result set as Protocol Buffer
+ */
+func FormatProtobuf(data RawData) ([]byte, error) {
+	return proto.Marshal(&schemas.ProtobufLorem{
+		Id: &data.Id,
+		Data: data.Data,
+		Timestamp: &data.Timestamp,
+	})
+}
+
+/**
+ * FormatFlatbuf encodes result set as Flatbuffers
+ */
+func FormatFlatbuf(data RawData) ([]byte, error) {
 	b := &flatbuffers.Builder{}
 	b.Reset()
 
@@ -71,23 +106,39 @@ func FormatFlatbuf(data RawData) []byte {
 
 	b.Finish(loremPosition)
 
-	return b.Bytes[b.Head():]
+	return b.Bytes[b.Head():], nil
 
 }
 
-func FormatProtobuf(data RawData) []byte {
-
-	protoData := &schemas.ProtobufLorem{
-		Id: &data.Id,
-		Data: data.Data,
-		Timestamp: &data.Timestamp,
-	}
-
-	protoFmt, err := proto.Marshal(protoData)
+/**
+ * FormatCapnProto encodes result set as Cap'n Proto
+ */
+func FormatCapnProto(data RawData) ([]byte, error) {
+	// New empty message for structs
+	msg, seg, err := capnp.NewMessage(capnp.SingleSegment(nil))
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	return protoFmt
+	// New root element
+	dataRoot, err := schemas.NewRootLoremCp(seg)
+	if err != nil {
+		log.Fatal(err)
+	}
 
+	dataRoot.SetTimestamp(data.Timestamp)
+	if dataRoot.SetId(data.Id) != nil { log.Fatal(err) }
+
+	for idx, tx := range data.Data {
+
+		dataMap, err := schemas.NewRootLoremCpDataMap(seg)
+		if err != nil {
+			log.Fatal(err)
+		}
+		dataMap.SetIndex(idx)
+		if dataMap.SetText(tx) != nil { log.Fatal(err) }
+
+	}
+
+	return msg.Marshal()
 }
