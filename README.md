@@ -1,6 +1,6 @@
 # Go Serialization Benchmarks
 
-This library is meant to benchmark the performance of various serialization formats as various transfer methods
+This utility was written to benchmark the performance of various serialization formats as well as transfer methods
 
 Usage
 -------
