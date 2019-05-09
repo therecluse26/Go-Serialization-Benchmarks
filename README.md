@@ -25,10 +25,3 @@ Results
  JSON                      |  Protocol Buffers          |  Cap'n Proto               |  FlatBuffers
 :-------------------------:|:-------------------------:|:-------------------------:|:-------------------------:                                                               
 ![JSON](results/json.png)  |  ![Protocol Buffers](results/protobuf.png) | ![CapnProto](results/capnproto.png) | ![FlatBuffers](results/flatbuffers.png)
-
-
-
-
-
-
-
