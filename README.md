@@ -24,7 +24,7 @@ Results
 
 #### Localhost
 
-![JSON][results/json.png]
-![Protocol Buffers][results/protobuf.png]
-![CapnProto][results/capnproto.png]
-![FlatBuffers][results/flatbuffers.png]
+![JSON](results/json.png)
+![Protocol Buffers](results/protobuf.png)
+![CapnProto](results/capnproto.png)
+![FlatBuffers](results/flatbuffers.png)
