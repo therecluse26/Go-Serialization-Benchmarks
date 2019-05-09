@@ -55,7 +55,7 @@ func (benchmarks *BenchAggregate) SingleBenchmark(reqType string, url string, pa
 	}
 
 	// Parses the response
-	resp.ParseResponse(params.format)
+	resp.ParseResponse(params.format, params.compress)
 
 	bench.EndTime = time.Now()
 	bench.TotalExecTime = time.Since(bench.StartTime)

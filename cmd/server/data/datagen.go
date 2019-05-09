@@ -39,5 +39,5 @@ func BuildRawData(id string, loremIpsum string, count int, length int) RawData {
 
 // GenerateData generates a huge block of Lorem Ipsum text
 func GenerateData() string {
-	return lorem2.Paragraph(2000000, 2000000)
+	return lorem2.Paragraph(200000, 200000)
 }

@@ -16,6 +16,7 @@ type Options struct {
 	inputFile    string
 	outputFile   string
 	url          string
+	compress     bool
 }
 
 // Params instantiates options and stores their values
@@ -45,8 +46,19 @@ func parseOptions() Options {
 	inputFilePtr := flag.String("in", "", "Path of an input file to serialize")
 	outputFilePtr := flag.String("out", "", "Output file path of serialized input file")
 	urlPtr := flag.String("u", "http://localhost:9090/data/", "Benchmark server url")
+	compressPtr := flag.Bool("compress", false, "Compress the data packets for transmission")
 
 	flag.Parse()
+
+	validFmt := false
+	for _, f := range Formats {
+		if f == *formatPtr {
+			validFmt = true
+		}
+	}
+	if validFmt == false {
+		panic("invalid format")
+	}
 
 	return Options{
 		format:       *formatPtr,
@@ -59,6 +71,7 @@ func parseOptions() Options {
 		inputFile:    *inputFilePtr,
 		outputFile:   *outputFilePtr,
 		url:          *urlPtr,
+		compress:     *compressPtr,
 	}
 
 }

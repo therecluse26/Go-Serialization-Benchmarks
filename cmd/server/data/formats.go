@@ -1,52 +1,57 @@
 package data
 
 import (
-	"encoding/xml"
+	"bufio"
+	"bytes"
+	"compress/gzip"
+	"encoding/json"
 	"errors"
-	"fmt"
 	"log"
 
-	"../../../schemas"
-	"github.com/gin-gonic/gin/json"
 	"github.com/golang/protobuf/proto"
-	flatbuffers "github.com/google/flatbuffers/go"
-	capnp "zombiezen.com/go/capnproto2"
+	"github.com/google/flatbuffers/go"
+	"github.com/therecluse26/Go-Serialization-Benchmarks/schemas"
+	"zombiezen.com/go/capnproto2"
 )
 
 // Formats supported
 var Formats = []string{
-	"JSON",
-	"XML",
-	"ProtoBuf",
-	"FlatBuffers",
-	"CapnProto",
-	"MessagePack",
-	"Avro",
-	"CBOR",
+	"json",
+	"xml",
+	"protobuf",
+	"flatbuffers",
+	"capnproto",
+	"messagepack",
+	"avro",
+	"cbor",
 }
 
 // FormatData invokes encoding functions by format
 // and returns encoded byte slice
-func FormatData(format string, data RawData) ([]byte, error) {
+func FormatData(format string, data RawData, compress bool) ([]byte, error) {
 
 	switch format {
 	case "json":
-		return FormatJSON(data)
-	case "xml":
-		return FormatXML(data)
+		return FormatJSON(data, compress)
+	/*case "xml":
+		return FormatXML(data, compress)*/
 	case "flatbuffers":
-		return FormatFlatbuf(data)
+		return FormatFlatbuf(data, compress)
 	case "protobuf":
-		return FormatProtobuf(data)
+		return FormatProtobuf(data, compress)
 	case "capnproto":
-		return FormatCapnProto(data)
+		return FormatCapnProto(data, compress)
 	default:
-		return []byte{}, errors.New("no vali format given")
+		return []byte{}, errors.New("no valid format given")
 	}
 }
 
 // FormatXML encodes result set as XML
-func FormatXML(data RawData) ([]byte, error) {
+/*func FormatXML(data RawData, compress bool) ([]byte, error) {
+
+	for i, d := range data.Data {
+		d.MarshalXML(data, "", " ")
+	}
 
 	xmlData, err := xml.Marshal(data)
 	if err != nil {
@@ -57,24 +62,47 @@ func FormatXML(data RawData) ([]byte, error) {
 
 	return xmlData, err
 
-}
+} */
 
 // FormatJSON encodes result set as JSON
-func FormatJSON(data RawData) ([]byte, error) {
+func FormatJSON(data RawData, compress bool) ([]byte, error) {
+
+	if compress == true {
+		var b bytes.Buffer
+		gz := gzip.NewWriter(&b)
+		dat, _ := json.Marshal(data)
+		json.NewEncoder(gz).Encode(&dat)
+		gz.Close()
+		return []byte(dat), nil
+
+	}
+
 	return json.Marshal(data)
 }
 
 // FormatProtobuf encodes result set as Protocol Buffer
-func FormatProtobuf(data RawData) ([]byte, error) {
-	return proto.Marshal(&schemas.ProtobufLorem{
-		Id:        &data.ID,
-		Data:      data.Data,
-		Timestamp: &data.Timestamp,
-	})
+func FormatProtobuf(data RawData, compress bool) ([]byte, error) {
+
+	if compress == true {
+		var b bytes.Buffer
+		w := bufio.NewWriter(&b)
+		gz := gzip.NewWriter(w)
+		json.NewEncoder(gz).Encode(data)
+		gz.Close()
+	} else {
+
+		return proto.Marshal(&schemas.ProtobufLorem{
+			Id:        &data.ID,
+			Data:      data.Data,
+			Timestamp: &data.Timestamp,
+		})
+	}
+
+	return []byte{}, errors.New("no protobuf returned")
 }
 
 // FormatFlatbuf encodes result set as Flatbuffers
-func FormatFlatbuf(data RawData) ([]byte, error) {
+func FormatFlatbuf(data RawData, compress bool) ([]byte, error) {
 	b := &flatbuffers.Builder{}
 	b.Reset()
 
@@ -106,7 +134,7 @@ func FormatFlatbuf(data RawData) ([]byte, error) {
 }
 
 // FormatCapnProto encodes result set as Cap'n Proto
-func FormatCapnProto(data RawData) ([]byte, error) {
+func FormatCapnProto(data RawData, compress bool) ([]byte, error) {
 	// New empty message for structs
 	msg, seg, err := capnp.NewMessage(capnp.SingleSegment(nil))
 	if err != nil {

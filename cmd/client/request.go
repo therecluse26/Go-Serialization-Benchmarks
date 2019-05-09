@@ -29,6 +29,7 @@ func HttpRequest(baseUrl string, params *Options) ([]byte, uintptr) {
 	q.Add("format", params.format)
 	q.Add("count", strconv.Itoa(params.arrayLength))
 	q.Add("length", strconv.Itoa(params.dataLength))
+	q.Add("compress", strconv.FormatBool(params.compress))
 
 	req.URL.RawQuery = q.Encode()
 
