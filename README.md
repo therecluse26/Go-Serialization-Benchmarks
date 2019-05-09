@@ -22,9 +22,13 @@ Results
 
 *These example benchmarks were run on a MacOS environment with 16GB RAM and a 2.2 GHz Intel Core i7 *
 
-#### Localhost
+ JSON                      |  Protocol Buffers          |  Cap'n Proto               |  FlatBuffers
+:-------------------------:|:-------------------------:|:-------------------------:|:-------------------------:                                                               
+![JSON](results/json.png)  |  ![Protocol Buffers](results/protobuf.png) | ![CapnProto](results/capnproto.png) | ![FlatBuffers](results/flatbuffers.png)
 
-![JSON](results/json.png)
-![Protocol Buffers](results/protobuf.png)
-![CapnProto](results/capnproto.png)
-![FlatBuffers](results/flatbuffers.png)
+
+
+
+
+
+
